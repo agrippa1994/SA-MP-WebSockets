@@ -25,7 +25,9 @@ native DestroyWSServer(ws_server:ws);
 
 native WSServerStartListen(ws_server:ws, const host[], const service[]);
 native WSServerStopListen(ws_server:ws);
+native WSServerIsListen(ws_server:ws);
 native WSServerConnected(ws_server:ws, ws_connection:con);
 native WSServerSend(ws_server:ws, ws_connection:con, const message[]);
 native WSServerSentToAll(ws_server:ws, const message[]);
 native WSServerGetIP(ws_server:ws, ws_connection:con, ip[], max_size);
+native WSServerKick(ws_server:ws, ws_connection:con, code, const reason[]);

@@ -48,6 +48,17 @@ bool WebSocketServer::stop_listen()
 
     try
     {
+        for_each([&](int, websocket_connection_ptr ptr)
+        {
+            try
+            {
+                ptr->close(1000, "");
+            }
+            catch(...)
+            {
+            }
+        });
+
         std::error_code ec;
         m_server.stop_listening(ec);
         m_server.stop();

@@ -37,10 +37,12 @@ AMX_NATIVE_INFO PluginNatives[] =
     { "DestroyWSServer", DestroyWSServer },
     { "WSServerStartListen", WSServerStartListen },
     { "WSServerStopListen", WSServerStopListen },
+    { "WSServerIsListen", WSServerIsListen },
     { "WSServerConnected", WSServerConnected },
     { "WSServerSend", WSServerSend },
     { "WSServerSentToAll", WSServerSentToAll },
     { "WSServerGetIP", WSServerGetIP },
+    { "WSServerKick", WSServerKick},
 
     { 0, 0 }
 };

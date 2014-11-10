@@ -1,7 +1,12 @@
 #include "WebSocketServerNatives.hpp"
 #include "WebSocketServerManager.hpp"
 
-WebSocketServerManager g_wsManager;
+#define GET_SERVER(server, idx) \
+    auto server = g_wsServerManager[params[idx]]; \
+    if(!server) return 0; \
+    if(!*server) return 0; \
+
+WebSocketServerManager g_wsServerManager;
 
 cell AMX_NATIVE_CALL CreateWSServer(AMX *amx, cell *params)
 {
@@ -12,22 +17,17 @@ cell AMX_NATIVE_CALL CreateWSServer(AMX *amx, cell *params)
     if(!connectName || !disconnectName || !messageName)
         return 0;
 
-    return g_wsManager.create(*connectName, *disconnectName, *messageName);
+    return g_wsServerManager.create(*connectName, *disconnectName, *messageName);
 }
 
 cell AMX_NATIVE_CALL DestroyWSServer(AMX *amx, cell *params)
 {
-    return g_wsManager.destroy(params[1]);
+    return g_wsServerManager.destroy(params[1]);
 }
 
 cell AMX_NATIVE_CALL WSServerStartListen(AMX *amx, cell *params)
 {
-    auto server = g_wsManager[params[1]];
-    if(!server)
-        return 0;
-
-    if(!*server)
-        return 0;
+    GET_SERVER(server, 1)
 
     auto host = string_from_cell(amx, params[2]);
     auto port = string_from_cell(amx, params[3]);
@@ -40,24 +40,21 @@ cell AMX_NATIVE_CALL WSServerStartListen(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL WSServerStopListen(AMX *amx, cell *params)
 {
-    auto server = g_wsManager[params[1]];
-    if(!server)
-        return 0;
-
-    if(!*server)
-        return 0;
+    GET_SERVER(server, 1)
 
     return (*server)->stop_listen();
 }
 
+cell AMX_NATIVE_CALL WSServerIsListen(AMX *amx, cell *params)
+{
+    GET_SERVER(server, 1)
+
+    return (*server)->isListen();
+}
+
 cell AMX_NATIVE_CALL WSServerConnected(AMX *amx, cell *params)
 {
-    auto server = g_wsManager[params[1]];
-    if(!server)
-        return 0;
-
-    if(!*server)
-        return 0;
+    GET_SERVER(server, 1)
 
     return (cell)(bool)(*server)->client_at(params[2]);
 }
@@ -69,7 +66,7 @@ cell AMX_NATIVE_CALL WSServerSend(AMX *amx, cell *params)
 
     try
     {
-        if(auto client = (*g_wsManager[params[1]])->client_at(params[2]))
+        if(auto client = (*g_wsServerManager[params[1]])->client_at(params[2]))
         {
             auto text = string_from_cell(amx, params[3]);
             if(text)
@@ -88,12 +85,7 @@ cell AMX_NATIVE_CALL WSServerSend(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL WSServerSentToAll(AMX *amx, cell *params)
 {
-    auto server = g_wsManager[params[1]];
-    if(!server)
-        return 0;
-
-    if(!*server)
-        return 0;
+    GET_SERVER(server, 1)
 
     auto text = string_from_cell(amx, params[2]);
     if(!text)
@@ -116,7 +108,7 @@ cell AMX_NATIVE_CALL WSServerGetIP(AMX *amx, cell *params)
 
     try
     {
-        if(auto client = (*g_wsManager[params[1]])->client_at(params[2]))
+        if(auto client = (*g_wsServerManager[params[1]])->client_at(params[2]))
         {
             auto ip = (*client)->get_socket().remote_endpoint().address().to_string();
 
@@ -133,8 +125,28 @@ cell AMX_NATIVE_CALL WSServerGetIP(AMX *amx, cell *params)
     return 0;
 }
 
+cell AMX_NATIVE_CALL WSServerKick(AMX *amx, cell *params)
+{
+    if(!WSServerConnected(amx, params))
+        return 0;
+
+    try
+    {
+        if(auto client = (*g_wsServerManager[params[1]])->client_at(params[2]))
+        {
+            auto reason = string_from_cell(amx, params[4]);
+            (*client)->close(params[3], reason ? *reason : "");
+            return 1;
+        }
+    }
+    catch(...)
+    {
+    }
+
+    return 0;
+}
 
 void UnloadWSServers()
 {
-    g_wsManager.clear();
+    g_wsServerManager.clear();
 }
