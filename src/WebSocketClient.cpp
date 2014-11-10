@@ -69,16 +69,6 @@ bool WebSocketClient::isConnected() const
     return m_connected;
 }
 
-const int WebSocketClient::index() const
-{
-    return m_index;
-}
-
-void WebSocketClient::setIndex(int idx)
-{
-    m_index = idx;
-}
-
 bool WebSocketClient::send(const std::string &text)
 {
     if(!isConnected())
@@ -101,7 +91,7 @@ void WebSocketClient::openHandler()
 {
     m_connected = true;
 
-    int idx = m_index; std::string func = m_functionConnectName;
+    int idx = index(); std::string func = m_functionConnectName;
     SynchronizationCall::instance() += [idx, func]() {
         int funcIDX = 0;
         if(!amx_FindPublic(g_pAMX, func.c_str(), &funcIDX))
@@ -116,7 +106,7 @@ void WebSocketClient::failHandler()
 {
     m_connected = false;
 
-    int idx = m_index; std::string func = m_functionFailName;
+    int idx = index(); std::string func = m_functionFailName;
 
     SynchronizationCall::instance() += [idx, func]() {
         int funcIDX = 0;
@@ -132,7 +122,7 @@ void WebSocketClient::closeHandler()
 {
     m_connected = false;
 
-    int idx = m_index; std::string func = m_functionDisconnectName;
+    int idx = index(); std::string func = m_functionDisconnectName;
     SynchronizationCall::instance() += [idx, func]() {
         int funcIDX = 0;
         if(!amx_FindPublic(g_pAMX, func.c_str(), &funcIDX))
@@ -150,7 +140,7 @@ void WebSocketClient::messageHandler(websocket_message msg)
     {
         data = msg->get_payload();
 
-        int idx = m_index; std::string func = m_functionMessageName;
+        int idx = index(); std::string func = m_functionMessageName;
         SynchronizationCall::instance() += [idx, func, data]()
         {
             int funcIDX = 0;

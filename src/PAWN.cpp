@@ -3,7 +3,7 @@
 
 AMX *g_pAMX = 0;
 
-boost::optional<std::string> string_from_cell(AMX *amx, cell p)
+Optional<std::string> string_from_cell(AMX *amx, cell p)
 {
     cell len = 0, *addr = 0;
 

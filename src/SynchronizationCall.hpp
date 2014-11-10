@@ -1,5 +1,5 @@
-#ifndef SYNCHRONIZATION_CALL_HPP
-#define SYNCHRONIZATION_CALL_HPP
+#ifndef SYNCHRONIZATIONCALL_HPP
+#define SYNCHRONIZATIONCALL_HPP
 
 #include "SynchronizationQueue.hpp"
 #include <boost/function.hpp>

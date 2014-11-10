@@ -1,10 +1,10 @@
-#ifndef SYNCHRONIZATION_QUEUE_HPP
-#define SYNCHRONIZATION_QUEUE_HPP
+#ifndef SYNCHRONIZATIONQUEUE_HPP
+#define SYNCHRONIZATIONQUEUE_HPP
+
+#include "Utils.hpp"
 
 #include <queue>
 #include <mutex>
-
-#include <boost/optional.hpp>
 
 template<typename T>
 class SynchronizationQueue
@@ -25,7 +25,7 @@ public:
 		m_queue.push(t);
 	}
 
-	boost::optional<T> operator()()
+    Optional<T> operator()()
 	{
 		std::lock_guard<std::mutex> lg(m_mutex);
 		if (m_queue.empty())

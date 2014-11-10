@@ -7,12 +7,13 @@
 #include "SDK/plugincommon.h"
 
 #include "SynchronizationCall.hpp"
+#include "Utils.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
 
 extern AMX *g_pAMX;
 
-boost::optional<std::string> string_from_cell(AMX *amx, cell p);
+Optional<std::string> string_from_cell(AMX *amx, cell p);
 
 #endif

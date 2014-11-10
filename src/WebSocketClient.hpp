@@ -1,13 +1,15 @@
 #ifndef WEBSOCKETCLIENT_HPP
 #define WEBSOCKETCLIENT_HPP
+
 #include "WebSocket.hpp"
+#include "BasicManagerDelegate.hpp"
+#include "Utils.hpp"
 
 #include <boost/thread.hpp>
 #include <string>
 
-class WebSocketClient
+class WebSocketClient : public BasicManagerDelegate
 {
-    int m_index = -1;
     bool m_connected = false;
 
     websocket_client m_client;
@@ -21,19 +23,13 @@ class WebSocketClient
 
 public:
     WebSocketClient(const std::string& connectName, const std::string& failName, const std::string& disconnectName, const std::string& messageName);
-
-    WebSocketClient(const WebSocketClient&) = delete;
-    WebSocketClient(WebSocketClient&&) = delete;
-    WebSocketClient& operator=(const WebSocketClient&) = delete;
-
     ~WebSocketClient();
+
+    DISABLE_CPY_MOV_CTOR(WebSocketClient)
 
     bool connect(const std::string& ip);
     bool disconnect();
     bool isConnected() const;
-
-    const int index() const;
-    void setIndex(int idx);
 
     bool send(const std::string& text);
 protected:

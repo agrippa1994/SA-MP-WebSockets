@@ -13,12 +13,12 @@ cell AMX_NATIVE_CALL CreateWSClient(AMX *amx, cell *params)
     if(!connectName || !failName || !disconnectName || !messageName)
         return -1;
 
-    return g_wsManager.createWebSocket(*connectName, *failName, *disconnectName, *messageName);
+    return g_wsManager.create(*connectName, *failName, *disconnectName, *messageName);
 }
 
 cell AMX_NATIVE_CALL DestroyWSClient(AMX *amx, cell *params)
 {
-    return g_wsManager.destroyWebSocket(params[1]);
+    return g_wsManager.destroy(params[1]);
 }
 
 cell AMX_NATIVE_CALL WSClientConnect(AMX *amx, cell *params)
