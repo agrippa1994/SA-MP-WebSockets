@@ -29,6 +29,8 @@ public onWSClientMessage(ws_server:ws, ws_connection:con, message[])
         
 	if(!strcmp(message, "stopserver", true))
 	    WSServerStopListen(ws);
+	    
+    WSServerSend(ws, con, message);
 }
 
 
@@ -39,5 +41,5 @@ main()
 	printf("ID: %d", mainWS);
 
 	// Connect to the remote endpoint
- 	printf("Listen ? %d", WSServerStartListen(mainWS, "0.0.0.0", "8080"));
+ 	printf("Listen ? %d", WSServerStartListen(mainWS, "0.0.0.0", "7777"));
 }
