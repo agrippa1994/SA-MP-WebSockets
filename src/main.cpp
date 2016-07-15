@@ -34,9 +34,9 @@ AMX_NATIVE_INFO PluginNatives[] = {
     { "WSServerStartListen", WSServerStartListen },
     { "WSServerStopListen", WSServerStopListen },
     { "WSServerIsListen", WSServerIsListen },
-    { "WSServerConnected", WSServerConnected },
+    { "WSServerIsConnected", WSServerIsConnected },
     { "WSServerSend", WSServerSend },
-    { "WSServerSentToAll", WSServerSentToAll },
+    { "WSServerSendToAll", WSServerSendToAll },
     { "WSServerGetIP", WSServerGetIP },
     { "WSServerKick", WSServerKick},
 
