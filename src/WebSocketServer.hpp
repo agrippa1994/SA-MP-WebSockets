@@ -1,44 +1,43 @@
-#ifndef WEBSOCKETSERVER_HPP
-#define WEBSOCKETSERVER_HPP
-
+#pragma once
 #include "WebSocket.hpp"
 #include "IndexedVector.hpp"
-#include "BasicManagerDelegate.hpp"
-#include "Utils.hpp"
+#include "Constructor.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <functional>
 
-class WebSocketServer : public BasicManagerDelegate
-{
-	websocket_server m_server;
-	IndexedVector<websocket_connection> m_clients;
-	boost::thread m_asioThread;
+class WebSocketServer {
+public:
+    DISABLE_CPY_MOV_CTOR(WebSocketServer)
+    WebSocketServer(const std::string& connectName,
+                    const std::string& disconnectName,
+                    const std::string& messageName);
+    ~WebSocketServer();
 
+    bool listen(const std::string &host, const std::string &port);
+    bool stopListen();
+    bool isListening() const;
+
+    int getID() const;
+    void setID(int id);
+
+    WebsocketConnectionPtr getClient(int id);
+
+    IndexedVector<WebsocketConnection> getClients() const;
+
+    int getClientIDByConnection(WebsocketConnection connection);
+
+private:
+    WebsocketServer m_server;
+    IndexedVector<WebsocketConnection> m_clients;
+    boost::thread m_asioThread;
+
+    int m_id = -1;
     const std::string m_connectName;
     const std::string m_disconnectName;
     const std::string m_messageName;
 
     bool m_isListen = false;
-
-public:
-    WebSocketServer(const std::string& connectName, const std::string& disconnectName, const std::string& messageName);
-    ~WebSocketServer();
-
-    bool listen(const std::string &host, const std::string &port);
-    bool stop_listen();
-    const bool isListen() const;
-
-    DISABLE_CPY_MOV_CTOR(WebSocketServer)
-
-    Optional<websocket_connection_ptr> client_at(int idx);
-    void for_each(boost::function<void (int, websocket_connection_ptr)> pred);
-
-private:
-	void openHandler(websocket_connection hdl);
-	void closeHandler(websocket_connection hdl);
-	void messageHandler(websocket_connection hdl, websocket_message msg);
 };
-
-#endif

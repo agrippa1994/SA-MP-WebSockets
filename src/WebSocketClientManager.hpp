@@ -1,9 +1,29 @@
-#ifndef WEBSOCKETCLIENTMANAGER_HPP
-#define WEBSOCKETCLIENTMANAGER_HPP
-
+#pragma once
 #include "WebSocketClient.hpp"
-#include "BasicManager.hpp"
+#include "IndexedVector.hpp"
+#include "Constructor.hpp"
+#include <memory>
 
-typedef BasicManager<WebSocketClient> WebSocketClientManager;
+class WebSocketClientManager {
+    typedef std::shared_ptr<WebSocketClient> WebSocketClientPointer;
 
-#endif
+public:
+    DISABLE_CPY_MOV_CTOR(WebSocketClientManager)
+
+    static WebSocketClientManager& sharedWebSocketClientManager();
+
+    int create(const std::string& connectNameCallback,
+               const std::string& failNameCallback,
+               const std::string& disconnectNameCallabck,
+               const std::string& messageNameCallback);
+
+    bool destroy(int id);
+    void destroyAll();
+
+    WebSocketClientPointer getClient(int id);
+
+private:
+    IndexedVector<WebSocketClientPointer> m_clients;
+
+    explicit WebSocketClientManager();
+};

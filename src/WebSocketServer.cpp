@@ -1,63 +1,118 @@
 #include "WebSocketServer.hpp"
 #include "PAWN.hpp"
+#include "SynchronizationCall.hpp"
 
-WebSocketServer::WebSocketServer(const std::string &connectName, const std::string& disconnectName, const std::string &messageName)
-    : m_connectName(connectName), m_disconnectName(disconnectName), m_messageName(messageName)
-{	
+WebSocketServer::WebSocketServer(const std::string &connectName,
+                                 const std::string& disconnectName,
+                                 const std::string &messageName)
+    : m_connectName(connectName),
+      m_disconnectName(disconnectName),
+      m_messageName(messageName) {
+
+    // Disable logging
 	m_server.set_access_channels(websocketpp::log::alevel::none);
 	m_server.set_error_channels(websocketpp::log::elevel::none);
 
+    // Initialize ASIO
 	m_server.init_asio();
 	
-    m_server.set_open_handler(boost::bind(&WebSocketServer::openHandler, this, _1));
-    m_server.set_close_handler(boost::bind(&WebSocketServer::closeHandler, this, _1));
-    m_server.set_message_handler(boost::bind(&WebSocketServer::messageHandler, this, _1, _2));
+    // Set handlers
+    m_server.set_open_handler([&](WebsocketConnection hdl) {
+        int clientID = (m_clients += hdl); // Add client
+        int serverID = getID();
+        std::string callbackName = m_connectName;
+
+        SynchronizationCall::sharedSynronizationCall() += [clientID, serverID, callbackName]() {
+            int funcID = 0;
+            if(!amx_FindPublic(PAWN::GetAMX(), callbackName.c_str(), &funcID)) {
+                amx_Push(PAWN::GetAMX(), clientID);
+                amx_Push(PAWN::GetAMX(), serverID);
+                amx_Exec(PAWN::GetAMX(), NULL, funcID);
+            }
+        };
+    });
+
+    m_server.set_close_handler([&](WebsocketConnection hdl) {
+        int clientID = -1;
+        try {
+            clientID = getClientIDByConnection(hdl);
+            m_clients -= clientID; // Remove client
+        } catch(...) { }
+
+        int serverID = getID();
+        std::string callbackName = m_disconnectName;
+
+        SynchronizationCall::sharedSynronizationCall() += [clientID, serverID, callbackName]() {
+            int funcID = 0;
+            if(!amx_FindPublic(PAWN::GetAMX(), callbackName.c_str(), &funcID)) {
+                amx_Push(PAWN::GetAMX(), clientID);
+                amx_Push(PAWN::GetAMX(), serverID);
+                amx_Exec(PAWN::GetAMX(), NULL, funcID);
+            }
+        };
+    });
+
+    m_server.set_message_handler([&](WebsocketConnection hdl, WebsocketMessage msg) {
+        try {
+            int clientID = -1;
+            auto str = msg->get_payload();
+
+            try {
+                clientID = getClientIDByConnection(hdl);
+            } catch(...) { }
+
+            int serverID = getID();
+            std::string callbackName = m_messageName;
+
+            SynchronizationCall::sharedSynronizationCall() += [str, clientID, serverID, callbackName]() {
+                int funcID = 0;
+                if(!amx_FindPublic(PAWN::GetAMX(), callbackName.c_str(), &funcID)) {
+                    cell addr = 0;
+
+                    amx_PushString(PAWN::GetAMX(), &addr, NULL, str.c_str(), NULL, NULL);
+                    amx_Push(PAWN::GetAMX(), clientID);
+                    amx_Push(PAWN::GetAMX(), serverID);
+                    amx_Exec(PAWN::GetAMX(), NULL, funcID);
+                    amx_Release(PAWN::GetAMX(), addr);
+                }
+            };
+        } catch(...) { }
+    });
 }
 
-WebSocketServer::~WebSocketServer()
-{
-    stop_listen();
+WebSocketServer::~WebSocketServer() {
+    stopListen();
 }
 
-bool WebSocketServer::listen(const std::string& host, const std::string& port)
-{
-    if(isListen())
+bool WebSocketServer::listen(const std::string& host, const std::string& port) {
+    if(isListening())
         return false;
 
-    try
-    {
+    try {
         m_server.listen(host, port);
         m_server.start_accept();
 
-        m_asioThread = boost::thread(boost::bind(&websocket_server::run, &m_server));
+        m_asioThread = boost::thread(boost::bind(&WebsocketServer::run, &m_server));
 
         m_isListen = true;
         return true;
-    }
-
-    catch(...)
-    {
-        return false;
-    }
+    } catch(...) { return false; }
 }
 
-bool WebSocketServer::stop_listen()
-{
-    if(!isListen())
+bool WebSocketServer::stopListen() {
+    if(!isListening())
         return false;
 
-    try
-    {
-        for_each([&](int, websocket_connection_ptr ptr)
-        {
-            try
-            {
-                ptr->close(1000, "");
-            }
-            catch(...)
-            {
-            }
-        });
+    try {
+        // Close all connections
+        for(auto& client : m_clients) {
+            try {
+                getClient(client.first)->close(1000, "");
+            } catch(...) { }
+        }
+
+        // Clear clients
+        m_clients.clear();
 
         std::error_code ec;
         m_server.stop_listening(ec);
@@ -69,105 +124,39 @@ bool WebSocketServer::stop_listen()
         m_isListen = false;
         return true;
     }
-    catch(...)
-    {
-        return false;
-    }
+    catch(...) { return false; }
 }
 
-const bool WebSocketServer::isListen() const
-{
+bool WebSocketServer::isListening() const {
     return m_isListen;
 }
 
-Optional<websocket_connection_ptr> WebSocketServer::client_at(int idx)
-{
-	try
-	{
-		return m_server.get_con_from_hdl(m_clients[idx]);
-	}
-	catch(...)
-	{
-		return nullptr;
-	}
+int WebSocketServer::getID() const {
+    return m_id;
 }
 
-void WebSocketServer::for_each(boost::function<void (int, websocket_connection_ptr)> pred)
-{
-    for(auto& i : m_clients)
-    {
-        if(auto ptr = client_at(i.first))
-            pred(i.first, *ptr);
+void WebSocketServer::setID(int id) {
+    m_id = id;
+}
+
+WebsocketConnectionPtr WebSocketServer::getClient(int id) {
+    websocketpp::connection_hdl hdl = m_clients.at(id);
+    return m_server.get_con_from_hdl(hdl);
+}
+
+IndexedVector<WebsocketConnection> WebSocketServer::getClients() const {
+    return m_clients;
+}
+
+int WebSocketServer::getClientIDByConnection(WebsocketConnection connection) {
+    m_server.get_con_from_hdl(connection);
+
+    for(const auto& i : m_clients) {
+        try {
+            if(m_server.get_con_from_hdl(i.second) == m_server.get_con_from_hdl(connection))
+                return i.first;
+        } catch(...) { }
     }
-}
 
-void WebSocketServer::openHandler(websocket_connection hdl)
-{
-    int client_idx = m_clients += hdl;
-    int server_idx = index();
-    std::string funcName = m_connectName;
-
-    SynchronizationCall::instance() += [client_idx, server_idx, funcName]() {
-		int funcIDX = 0;
-        if(!amx_FindPublic(g_pAMX, funcName.c_str(), &funcIDX)) {
-            amx_Push(g_pAMX, client_idx);
-            amx_Push(g_pAMX, server_idx);
-			amx_Exec(g_pAMX, NULL, funcIDX);
-		}
-	};
-}
-
-void WebSocketServer::closeHandler(websocket_connection hdl)
-{
-    int client_idx = -1;
-
-	if(auto key = m_clients.index_of([&](websocket_connection i){
-		return m_server.get_con_from_hdl(i) == m_server.get_con_from_hdl(hdl);
-	})) {
-        client_idx = *key;
-        m_clients -= client_idx;
-	} 
-
-    int server_idx = index();
-    std::string funcName = m_disconnectName;
-
-    SynchronizationCall::instance() += [client_idx, server_idx, funcName]() {
-        int funcIDX = 0;
-        if(!amx_FindPublic(g_pAMX, funcName.c_str(), &funcIDX)) {
-            amx_Push(g_pAMX, client_idx);
-            amx_Push(g_pAMX, server_idx);
-            amx_Exec(g_pAMX, NULL, funcIDX);
-        }
-    };
-}
-
-void WebSocketServer::messageHandler(websocket_connection hdl, websocket_message msg)
-{
-	try {
-        int client_idx = -1;
-		auto str = msg->get_payload();
-
-		if(auto key = m_clients.index_of([&](websocket_connection i){
-			return m_server.get_con_from_hdl(i) == m_server.get_con_from_hdl(hdl);
-		})) {
-            client_idx = *key;
-		} 
-
-        int server_idx = index();
-        std::string funcName = m_messageName;
-
-        SynchronizationCall::instance() += [str, client_idx, server_idx, funcName]() {
-			int funcIDX = 0;
-            if(!amx_FindPublic(g_pAMX, funcName.c_str(), &funcIDX)) {
-				cell addr = 0;
-
-				amx_PushString(g_pAMX, &addr, NULL, str.c_str(), NULL, NULL);
-                amx_Push(g_pAMX, client_idx);
-                amx_Push(g_pAMX, server_idx);
-				amx_Exec(g_pAMX, NULL, funcIDX);
-
-				amx_Release(g_pAMX, addr);
-			}
-		};
-	} catch(...) { }
+    return -1;
 }

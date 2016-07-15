@@ -1,16 +1,24 @@
-#ifndef SYNCHRONIZATIONCALL_HPP
-#define SYNCHRONIZATIONCALL_HPP
+#pragma once
+#include "Constructor.hpp"
+#include <queue>
+#include <mutex>
 
-#include "SynchronizationQueue.hpp"
-#include <boost/function.hpp>
+class SynchronizationCall {
+    typedef std::function<void()> Callback;
+    typedef std::queue<Callback> CallbackQueue;
 
-class SynchronizationCall : public SynchronizationQueue<boost::function<void ()>>
-{
 public:
-	static SynchronizationCall& instance() {
-		static SynchronizationCall object;
-		return object;
-	}
-};
+    DISABLE_CPY_MOV_CTOR(SynchronizationCall)
 
-#endif
+    static SynchronizationCall& sharedSynronizationCall();
+
+    void operator += (Callback cb);
+
+    void executeAllAndClear();
+
+private:
+    CallbackQueue m_queue;
+    std::mutex m_mutex;
+
+    explicit SynchronizationCall();
+};

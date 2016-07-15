@@ -1,6 +1,4 @@
-#ifndef WEBSOCKETSERVERNATIVES_HPP
-#define WEBSOCKETSERVERNATIVES_HPP
-
+#pragma once
 #include "PAWN.hpp"
 
 cell AMX_NATIVE_CALL CreateWSServer(AMX *amx, cell *params);
@@ -15,5 +13,3 @@ cell AMX_NATIVE_CALL WSServerGetIP(AMX *amx, cell *params);
 cell AMX_NATIVE_CALL WSServerKick(AMX *amx, cell *params);
 
 void UnloadWSServers();
-
-#endif

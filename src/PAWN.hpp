@@ -1,19 +1,14 @@
-#ifndef PAWN_HPP
-#define PAWN_HPP
-
+#pragma once
 #define SN_TARGET_PS2
 
 #include "SDK/amx/amx.h"
 #include "SDK/plugincommon.h"
 
-#include "SynchronizationCall.hpp"
-#include "Utils.hpp"
-
-#include <boost/optional.hpp>
 #include <string>
 
-extern AMX *g_pAMX;
+namespace PAWN {
+    void SetAMX(AMX *amx);
+    AMX *GetAMX();
 
-Optional<std::string> string_from_cell(AMX *amx, cell p);
-
-#endif
+    std::string CellToString(cell c);
+}

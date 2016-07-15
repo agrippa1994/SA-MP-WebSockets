@@ -1,9 +1,25 @@
-#ifndef WEBSOCKETSERVERMANAGER_HPP
-#define WEBSOCKETSERVERMANAGER_HPP
-
+#pragma once
 #include "WebSocketServer.hpp"
-#include "BasicManager.hpp"
+#include "IndexedVector.hpp"
+#include <string>
+#include <memory>
 
-typedef BasicManager<WebSocketServer> WebSocketServerManager;
+class WebSocketServerManager {
+    typedef std::shared_ptr<WebSocketServer> WebSocketServerPointer;
 
-#endif
+public:
+    static WebSocketServerManager& sharedWebSocketServerManager();
+
+    int create(const std::string& connectName, const std::string& disconnectName, const std::string& messageName);
+    bool destroy(int id);
+    void destroyAll();
+
+    WebSocketServerPointer getServer(int id);
+
+    const IndexedVector<WebSocketServerPointer>& getServers() const;
+
+private:
+    IndexedVector<WebSocketServerPointer> m_servers;
+
+    explicit WebSocketServerManager();
+};

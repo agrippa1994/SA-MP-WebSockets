@@ -1,29 +1,25 @@
 #include "PAWN.hpp"
 #include "WebSocketClientNatives.hpp"
 #include "WebSocketServerNatives.hpp"
-#include <memory>
+#include "SynchronizationCall.hpp"
 
 extern void *pAMXFunctions;
 
-PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
-{
+PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports() {
     return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES | SUPPORTS_PROCESS_TICK;
 }
 
-PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
-{
+PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData) {
     pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
     return true;
 }
 
-PLUGIN_EXPORT void PLUGIN_CALL Unload()
-{
+PLUGIN_EXPORT void PLUGIN_CALL Unload() {
     UnloadWSClients();
     UnloadWSServers();
 }
 
-AMX_NATIVE_INFO PluginNatives[] =
-{
+AMX_NATIVE_INFO PluginNatives[] = {
     // WebSocketClient
     { "CreateWSClient", CreateWSClient },
     { "DestroyWSClient", DestroyWSClient },
@@ -47,21 +43,16 @@ AMX_NATIVE_INFO PluginNatives[] =
     { 0, 0 }
 };
 
-PLUGIN_EXPORT int PLUGIN_CALL AmxLoad( AMX *amx )
-{
-    g_pAMX = amx;
+PLUGIN_EXPORT int PLUGIN_CALL AmxLoad( AMX *amx ) {
+    PAWN::SetAMX(amx);
     return amx_Register(amx, PluginNatives, -1);
 }
 
-PLUGIN_EXPORT int PLUGIN_CALL AmxUnload( AMX *amx )
-{
+PLUGIN_EXPORT int PLUGIN_CALL AmxUnload( AMX *amx ) {
     return AMX_ERR_NONE;
 }
 
-PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
-{
-    while(auto ptr = SynchronizationCall::instance()())
-        (*ptr)();
-
+PLUGIN_EXPORT void PLUGIN_CALL ProcessTick() {
+    SynchronizationCall::sharedSynronizationCall().executeAllAndClear();
 	return;
 }
