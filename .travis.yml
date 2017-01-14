@@ -1,11 +1,14 @@
 os:
   - linux
 
+language: c
+
 addons:
   apt:
     packages:
       - gcc-multilib
       - cmake
+      - lib32stdc++6
 
 before_script:
   - git clone https://github.com/Zeex/pawn.git
@@ -16,5 +19,7 @@ before_script:
   - cd ..
   
 script:
-  - LD_LIBRARY_PATH=pawn/ pawn/pawncc gamemodes/wsserver.pwn -ogamemodes/wsserver.amx -ipawno/include
-  - LD_LIBRARY_PATH=pawn/ pawn/pawncc gamemodes/wsclient.pwn -ogamemodes/wsclient.amx -ipawno/include
+  - LD_LIBRARY_PATH=pawn/ pawn/pawncc gamemodes/test.pwn -ogamemodes/test.amx -ipawno/include
+  - chmod u+x samp03svr
+  - ./samp03svr
+
