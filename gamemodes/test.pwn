@@ -3,6 +3,14 @@
 
 new gExitCode = 0;
 
+#if !defined print
+native print(const string[]);
+#endif
+
+#if !defined printf
+native printf(const format[], {Float,_}:...);
+#endif
+
 stock exit_process(code)
 {
 	printf("EXIT_CODE: %d", code);
