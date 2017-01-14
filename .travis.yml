@@ -1,0 +1,2 @@
+script:
+  git clone https://github.com/agrippa1994/pawn-build-server.git
