@@ -19,5 +19,4 @@ script:
   - LD_LIBRARY_PATH=pawn/ pawn/pawncc gamemodes/test.pwn -ogamemodes/test.amx -ipawno/include
   - chmod u+x samp03svr
   - ./samp03svr
-  - cat server_log.txt
-  - grep -e "EXIT_CODE: " server_log.txt  | awk '{print $3}'
+
