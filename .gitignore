@@ -7,5 +7,5 @@ install_manifest.txt
 build
 samp-server.exe
 server_log.txt
-*.amx
+
 CMakeLists.txt.user
