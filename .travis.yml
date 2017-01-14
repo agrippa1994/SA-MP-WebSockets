@@ -1,4 +1,6 @@
 script:
   - git clone https://github.com/agrippa1994/pawn-build-server.git
   - chmod u+x pawn-build-server/pawn/linux/x64/pawncc
-  - LD_LIBRARY_PATH=pawn-build-server/pawn/linux/x64/ pawn-build-server/pawn/linux/x64/pawncc
+  - alias pawncc='LD_LIBRARY_PATH=pawn-build-server/pawn/linux/x64/ pawn-build-server/pawn/linux/x64/pawncc'
+  - pawncc gamemodes/wsserver.pwn -ogamemodes/wsserver.amx -ipawno/include
+  - pawncc gamemodes/wsclient.pwn -ogamemodes/wsclient.amx -ipawno/include
