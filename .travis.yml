@@ -1,5 +1,19 @@
+os:
+  - linux
+
+addons:
+  apt:
+    packages:
+      - gcc-multilib
+      - cmake
+
+before_script:
+  - git clone https://github.com/Zeex/pawn.git
+  - cd pawn
+  - cmake source/compiler -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  - make
+  - cd ..
+  
 script:
-  - git clone https://github.com/agrippa1994/pawn-build-server.git
-  - chmod u+x pawn-build-server/pawn/linux/x64/pawncc
-  - LD_LIBRARY_PATH=pawn-build-server/pawn/linux/x64/ pawn-build-server/pawn/linux/x64/pawncc gamemodes/wsserver.pwn -ogamemodes/wsserver.amx -ipawno/include
-  - LD_LIBRARY_PATH=pawn-build-server/pawn/linux/x64/ pawn-build-server/pawn/linux/x64/pawncc gamemodes/wsclient.pwn -ogamemodes/wsclient.amx -ipawno/include
+  - LD_LIBRARY_PATH=pawn/ pawn/pawncc gamemodes/wsserver.pwn -ogamemodes/wsserver.amx -ipawno/include
+  - LD_LIBRARY_PATH=pawn/ pawn/pawncc gamemodes/wsclient.pwn -ogamemodes/wsclient.amx -ipawno/include
