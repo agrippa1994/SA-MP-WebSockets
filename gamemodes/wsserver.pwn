@@ -1,3 +1,6 @@
+#undef printf
+#undef print
+
 #include <a_samp>
 #include <websockets>
 #include <sscanf2>
