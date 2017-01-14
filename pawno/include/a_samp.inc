@@ -54,8 +54,6 @@
 // --------------------------------------------------
 
 // Util
-native print(const string[]);
-native printf(const format[], {Float,_}:...);
 native format(output[], len, const format[], {Float,_}:...);
 native SendClientMessage(playerid, color, const message[]);
 native SendClientMessageToAll(color, const message[]);
