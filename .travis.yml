@@ -11,6 +11,7 @@ before_script:
   - git clone https://github.com/Zeex/pawn.git
   - cd pawn
   - cmake source/compiler -DCMAKE_BUILD_TYPE=RelWithDebInfo
+                          -DCMAKE_C_FLAGS=-m32
   - make
   - cd ..
   
