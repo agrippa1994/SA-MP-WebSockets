@@ -1,2 +1,4 @@
 script:
-  git clone https://github.com/agrippa1994/pawn-build-server.git
+  - git clone https://github.com/agrippa1994/pawn-build-server.git
+  - chmod u+x pawn-build-server/pawn/linux/x64/pawncc
+  - LD_LIBRARY_PATH=pawn-build-server/pawn/linux/x64/ pawn-build-server/pawn/linux/x64/pawncc
