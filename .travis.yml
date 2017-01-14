@@ -6,6 +6,7 @@ addons:
     packages:
       - gcc-multilib
       - cmake
+      - lib32stdc++6
 
 before_script:
   - git clone https://github.com/Zeex/pawn.git
