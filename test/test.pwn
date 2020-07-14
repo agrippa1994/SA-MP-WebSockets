@@ -1,5 +1,5 @@
 #include <a_samp>
-#include <websockets>
+#include "../ws.inc"
 
 new gExitCode = 0;
 
