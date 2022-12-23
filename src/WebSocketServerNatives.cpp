@@ -5,9 +5,10 @@ cell AMX_NATIVE_CALL CreateWSServer(AMX *amx, cell *params) {
     try {
         auto& manager = WebSocketServerManager::sharedWebSocketServerManager();
         int id = manager.create(
-                    PAWN::CellToString(params[1]),
-                    PAWN::CellToString(params[2]),
-                    PAWN::CellToString(params[3]));
+                    amx,
+                    PAWN::CellToString(params[1], amx),
+                    PAWN::CellToString(params[2], amx),
+                    PAWN::CellToString(params[3], amx));
 
         if(id != -1)
             manager.getServer(id)->setID(id);
@@ -29,8 +30,8 @@ cell AMX_NATIVE_CALL WSServerStartListen(AMX *amx, cell *params) {
         return WebSocketServerManager::sharedWebSocketServerManager()
                 .getServer(params[1])
                 ->listen(
-                    PAWN::CellToString(params[2]),
-                    PAWN::CellToString(params[3]));
+                    PAWN::CellToString(params[2], amx),
+                    PAWN::CellToString(params[3], amx));
     } catch(...) { return 0; }
 }
 
@@ -64,7 +65,7 @@ cell AMX_NATIVE_CALL WSServerSend(AMX *amx, cell *params) {
         return (cell)(bool)WebSocketServerManager::sharedWebSocketServerManager()
                 .getServer(params[1])
                 ->getClient(params[2])
-                ->send(PAWN::CellToString(params[3]));
+                ->send(PAWN::CellToString(params[3], amx));
     } catch(...) { return 0; }
 }
 
@@ -73,7 +74,7 @@ cell AMX_NATIVE_CALL WSServerSendToAll(AMX *amx, cell *params) {
     try {
         const auto& server = WebSocketServerManager::sharedWebSocketServerManager()
                 .getServer(params[1]);
-        const auto message = PAWN::CellToString(params[2]);
+        const auto message = PAWN::CellToString(params[2], amx);
         for(const auto& client: server->getClients()) {
             try {
                 server->getClient(client.first)->send(message);
@@ -108,7 +109,7 @@ cell AMX_NATIVE_CALL WSServerKick(AMX *amx, cell *params) {
         WebSocketServerManager::sharedWebSocketServerManager()
                 .getServer(params[1])
                 ->getClient(params[2])
-                ->close(params[3], PAWN::CellToString(params[4]));
+                ->close(params[3], PAWN::CellToString(params[4], amx));
         return 1;
     }
     catch(...) { return 0; }

@@ -5,12 +5,12 @@ WebSocketServerManager &WebSocketServerManager::sharedWebSocketServerManager() {
     return singleTon;
 }
 
-int WebSocketServerManager::create(
+int WebSocketServerManager::create(AMX *amx,
         const std::string &connectName,
         const std::string &disconnectName,
         const std::string &messageName) {
 
-    return m_servers += std::make_shared<WebSocketServer>(
+    return m_servers += std::make_shared<WebSocketServer>(amx,
                 connectName,
                 disconnectName,
                 messageName);

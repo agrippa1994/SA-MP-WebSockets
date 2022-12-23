@@ -1,11 +1,12 @@
 #include "WebSocketServer.hpp"
-#include "PAWN.hpp"
 #include "SynchronizationCall.hpp"
 
-WebSocketServer::WebSocketServer(const std::string &connectName,
+WebSocketServer::WebSocketServer(AMX *amx,
+                                 const std::string &connectName,
                                  const std::string& disconnectName,
                                  const std::string &messageName)
-    : m_connectName(connectName),
+    : m_amx(amx),
+      m_connectName(connectName),
       m_disconnectName(disconnectName),
       m_messageName(messageName) {
 
@@ -20,14 +21,15 @@ WebSocketServer::WebSocketServer(const std::string &connectName,
     m_server.set_open_handler([&](WebsocketConnection hdl) {
         int clientID = (m_clients += hdl); // Add client
         int serverID = getID();
+		AMX *amx = m_amx;
         std::string callbackName = m_connectName;
 
-        SynchronizationCall::sharedSynronizationCall() += [clientID, serverID, callbackName]() {
+        SynchronizationCall::sharedSynronizationCall() += [amx, clientID, serverID, callbackName]() {
             int funcID = 0;
-            if(!amx_FindPublic(PAWN::GetAMX(), callbackName.c_str(), &funcID)) {
-                amx_Push(PAWN::GetAMX(), clientID);
-                amx_Push(PAWN::GetAMX(), serverID);
-                amx_Exec(PAWN::GetAMX(), NULL, funcID);
+            if(!amx_FindPublic(amx, callbackName.c_str(), &funcID)) {
+                amx_Push(amx, clientID);
+                amx_Push(amx, serverID);
+                amx_Exec(amx, NULL, funcID);
             }
         };
     });
@@ -40,14 +42,15 @@ WebSocketServer::WebSocketServer(const std::string &connectName,
         } catch(...) { }
 
         int serverID = getID();
+		AMX *amx = m_amx;
         std::string callbackName = m_disconnectName;
 
-        SynchronizationCall::sharedSynronizationCall() += [clientID, serverID, callbackName]() {
+        SynchronizationCall::sharedSynronizationCall() += [amx, clientID, serverID, callbackName]() {
             int funcID = 0;
-            if(!amx_FindPublic(PAWN::GetAMX(), callbackName.c_str(), &funcID)) {
-                amx_Push(PAWN::GetAMX(), clientID);
-                amx_Push(PAWN::GetAMX(), serverID);
-                amx_Exec(PAWN::GetAMX(), NULL, funcID);
+            if(!amx_FindPublic(amx, callbackName.c_str(), &funcID)) {
+                amx_Push(amx, clientID);
+                amx_Push(amx, serverID);
+                amx_Exec(amx, NULL, funcID);
             }
         };
     });
@@ -62,18 +65,19 @@ WebSocketServer::WebSocketServer(const std::string &connectName,
             } catch(...) { }
 
             int serverID = getID();
+			AMX *amx = m_amx;
             std::string callbackName = m_messageName;
 
-            SynchronizationCall::sharedSynronizationCall() += [str, clientID, serverID, callbackName]() {
+            SynchronizationCall::sharedSynronizationCall() += [str, clientID, serverID, amx, callbackName]() {
                 int funcID = 0;
-                if(!amx_FindPublic(PAWN::GetAMX(), callbackName.c_str(), &funcID)) {
+                if(!amx_FindPublic(amx, callbackName.c_str(), &funcID)) {
                     cell addr = 0;
 
-                    amx_PushString(PAWN::GetAMX(), &addr, NULL, str.c_str(), NULL, NULL);
-                    amx_Push(PAWN::GetAMX(), clientID);
-                    amx_Push(PAWN::GetAMX(), serverID);
-                    amx_Exec(PAWN::GetAMX(), NULL, funcID);
-                    amx_Release(PAWN::GetAMX(), addr);
+                    amx_PushString(amx, &addr, NULL, str.c_str(), NULL, NULL);
+                    amx_Push(amx, clientID);
+                    amx_Push(amx, serverID);
+                    amx_Exec(amx, NULL, funcID);
+                    amx_Release(amx, addr);
                 }
             };
         } catch(...) { }
@@ -92,7 +96,7 @@ bool WebSocketServer::listen(const std::string& host, const std::string& port) {
         m_server.listen(host, port);
         m_server.start_accept();
 
-        m_asioThread = boost::thread(boost::bind(&WebsocketServer::run, &m_server));
+        m_asioThread = std::make_unique<asio::thread>(std::bind(&WebsocketServer::run, &m_server));
 
         m_isListen = true;
         return true;
@@ -118,8 +122,7 @@ bool WebSocketServer::stopListen() {
         m_server.stop_listening(ec);
         m_server.stop();
 
-        if(m_asioThread.joinable())
-            m_asioThread.join();
+        m_asioThread->join();
 
         m_isListen = false;
         return true;

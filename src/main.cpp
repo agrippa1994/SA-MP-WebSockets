@@ -44,7 +44,6 @@ AMX_NATIVE_INFO PluginNatives[] = {
 };
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad( AMX *amx ) {
-    PAWN::SetAMX(amx);
     return amx_Register(amx, PluginNatives, -1);
 }
 

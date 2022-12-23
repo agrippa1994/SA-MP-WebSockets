@@ -2,16 +2,17 @@
 #include "WebSocket.hpp"
 #include "IndexedVector.hpp"
 #include "Constructor.hpp"
+#include "PAWN.hpp"
 
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <asio/thread.hpp>
 #include <functional>
+#include <memory>
 
 class WebSocketServer {
 public:
     DISABLE_CPY_MOV_CTOR(WebSocketServer)
-    WebSocketServer(const std::string& connectName,
+    WebSocketServer(AMX *amx,
+		            const std::string& connectName,
                     const std::string& disconnectName,
                     const std::string& messageName);
     ~WebSocketServer();
@@ -32,9 +33,10 @@ public:
 private:
     WebsocketServer m_server;
     IndexedVector<WebsocketConnection> m_clients;
-    boost::thread m_asioThread;
+    std::unique_ptr<asio::thread> m_asioThread;
 
     int m_id = -1;
+	AMX * const m_amx;
     const std::string m_connectName;
     const std::string m_disconnectName;
     const std::string m_messageName;

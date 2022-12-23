@@ -7,8 +7,5 @@
 #include <string>
 
 namespace PAWN {
-    void SetAMX(AMX *amx);
-    AMX *GetAMX();
-
-    std::string CellToString(cell c);
+    std::string CellToString(cell c, AMX *amx);
 }

@@ -1,15 +1,18 @@
 #pragma once
 #include "WebSocket.hpp"
 #include "Constructor.hpp"
+#include "PAWN.hpp"
 
-#include <boost/thread.hpp>
+#include <asio/thread.hpp>
 #include <string>
+#include <memory>
 
 class WebSocketClient
 {
 public:
     DISABLE_CPY_MOV_CTOR(WebSocketClient)
-    WebSocketClient(const std::string& connectName,
+    WebSocketClient(AMX *amx,
+		            const std::string& connectName,
                     const std::string& failName,
                     const std::string& disconnectName,
                     const std::string& messageName);
@@ -30,8 +33,9 @@ private:
 
     WebsocketClient m_client;
     websocketpp::connection_hdl m_connectionPtr;
-    boost::thread m_asioThread;
+	std::unique_ptr<asio::thread> m_asioThread;
 
+	AMX * const m_amx;
     const std::string m_functionConnectName;
     const std::string m_functionFailName;
     const std::string m_functionDisconnectName;

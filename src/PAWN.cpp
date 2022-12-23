@@ -1,33 +1,20 @@
 #include "PAWN.hpp"
-#include <boost/scope_exit.hpp>
 
-AMX *g_amx = nullptr;
-
-void PAWN::SetAMX(AMX *amx) {
-    g_amx = amx;
-}
-
-AMX *PAWN::GetAMX() {
-    return g_amx;
-}
-
-std::string PAWN::CellToString(cell c) {
+std::string PAWN::CellToString(cell c, AMX *amx) {
     cell len = 0, *addr = 0;
 
-    amx_GetAddr(GetAMX(), c, &addr);
-    amx_StrLen(addr, &len);
+	if(amx_GetAddr(amx, c, &addr) != AMX_ERR_NONE)
+		return {}; // Empty string
+
+	if(amx_StrLen(addr, &len) != AMX_ERR_NONE)
+		return {};
 
     if(!len)
-        return {}; // Empty string
+        return {};
 
-    len++; // Zero terminated string
-    char *buffer = new char[len];
-    amx_GetString(buffer, addr, 0, len);
-
-    BOOST_SCOPE_EXIT_ALL(&) {
-        if(buffer)
-            delete [] buffer;
-    };
+	std::string buffer;
+	buffer.resize(len);
+    amx_GetString(&buffer[0], addr, 0, len + 1);
 
     return std::string(buffer);
 }
