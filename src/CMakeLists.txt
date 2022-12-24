@@ -9,25 +9,15 @@ cmake_minimum_required(VERSION 2.8)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
+add_compile_definitions(ASIO_STANDALONE)
+add_compile_definitions(_WEBSOCKETPP_CPP11_TYPE_TRAITS_)
+add_compile_definitions(ASIO_SEPARATE_COMPILATION)
+
 #Compiler-Flags
 if(WIN32)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /w")
 else()
     set(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -w -std=c++11 ")
-endif()
-
-# Boost
-if(UNIX)
-    set(Boost_USE_STATIC_LIBS ON)
-    set(Boost_USE_MULTITHREADED ON)
-
-    find_package(Boost 1.45.0 COMPONENTS thread system REQUIRED)
-
-    if(Boost_FOUND)
-        include_directories(${Boost_INCLUDE_DIRS})
-    else(Error)
-        message(FATAL_ERROR "Boost can not be found!")
-    endif()
 endif()
 
 # Look for the source-files
@@ -39,8 +29,3 @@ endif()
 
 #Create binaries
 add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
-
-# Link boost just on Unix, MSVC has an autolink support for boost
-if(Boost_FOUND AND UNIX)
-    target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
-endif()
