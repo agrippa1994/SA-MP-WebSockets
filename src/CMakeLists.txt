@@ -17,7 +17,7 @@ add_compile_definitions(ASIO_SEPARATE_COMPILATION)
 if(WIN32)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /w")
 else()
-    set(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -w -std=c++11 ")
+    set(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -w -std=c++14 ")
 endif()
 
 # Look for the source-files
