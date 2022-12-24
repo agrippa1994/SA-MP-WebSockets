@@ -1,12 +1,12 @@
 #include "PAWN.hpp"
 
-std::string PAWN::CellToString(cell c, AMX *amx) {
-    cell len = 0, *addr = 0;
+std::string PAWN::CellToString(cell c, AMX *amx, cell len) {
+    cell *addr = 0;
 
 	if(amx_GetAddr(amx, c, &addr) != AMX_ERR_NONE)
 		return {}; // Empty string
 
-	if(amx_StrLen(addr, &len) != AMX_ERR_NONE)
+	if(len == -1) if(amx_StrLen(addr, &len) != AMX_ERR_NONE)
 		return {};
 
     if(!len)

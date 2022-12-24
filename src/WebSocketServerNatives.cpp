@@ -62,10 +62,11 @@ cell AMX_NATIVE_CALL WSServerIsConnected(AMX *amx, cell *params) {
 
 cell AMX_NATIVE_CALL WSServerSend(AMX *amx, cell *params) {
     try {
+        auto opcode = params[5] ? websocketpp::frame::opcode::binary : websocketpp::frame::opcode::text;
         return (cell)(bool)WebSocketServerManager::sharedWebSocketServerManager()
                 .getServer(params[1])
                 ->getClient(params[2])
-                ->send(PAWN::CellToString(params[3], amx));
+                ->send(PAWN::CellToString(params[3], amx, params[4]));
     } catch(...) { return 0; }
 }
 
@@ -74,10 +75,11 @@ cell AMX_NATIVE_CALL WSServerSendToAll(AMX *amx, cell *params) {
     try {
         const auto& server = WebSocketServerManager::sharedWebSocketServerManager()
                 .getServer(params[1]);
-        const auto message = PAWN::CellToString(params[2], amx);
+        const auto message = PAWN::CellToString(params[2], amx, params[3]);
         for(const auto& client: server->getClients()) {
             try {
-                server->getClient(client.first)->send(message);
+                auto opcode = params[4] ? websocketpp::frame::opcode::binary : websocketpp::frame::opcode::text;
+                server->getClient(client.first)->send(message, opcode);
                 clientsSent++;
             } catch(...) { }
         }

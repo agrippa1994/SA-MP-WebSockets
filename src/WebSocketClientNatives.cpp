@@ -53,7 +53,7 @@ cell AMX_NATIVE_CALL WSClientSend(AMX *amx, cell *params) {
     try {
         WebSocketClientManager::sharedWebSocketClientManager()
                 .getClient(params[1])
-                ->send(PAWN::CellToString(params[2], amx));
+                ->send(PAWN::CellToString(params[2], amx, params[3]), params[4]);
         return 1;
     } catch(...) { return 0; }
 }

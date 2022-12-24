@@ -17,7 +17,7 @@ native WSClientConnect(ws_client:ws, const host[]);
 native WSClientDisconnect(ws_client:ws);
 
 native WSClientIsConnected(ws_client:ws);
-native WSClientSend(ws_client:ws, const message[]);
+native WSClientSend(ws_client:ws, const message[], length = -1, bool:isBinary = false);
 
 // WebSocketServer
 
@@ -35,8 +35,8 @@ native WSServerStopListen(ws_server:ws);
 native WSServerIsListen(ws_server:ws);
 native WSServerIsConnected(ws_server:ws, ws_connection:con);
 
-native WSServerSend(ws_server:ws, ws_connection:con, const message[]);
-native WSServerSendToAll(ws_server:ws, const message[]);
+native WSServerSend(ws_server:ws, ws_connection:con, const message[], length = -1, bool:isBinary = false);
+native WSServerSendToAll(ws_server:ws, const message[], length = -1, bool:isBinary = false);
 
 native WSServerGetIP(ws_server:ws, ws_connection:con, ip[], max_size);
 native WSServerKick(ws_server:ws, ws_connection:con, code, const reason[]);

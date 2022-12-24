@@ -7,5 +7,5 @@
 #include <string>
 
 namespace PAWN {
-    std::string CellToString(cell c, AMX *amx);
+    std::string CellToString(cell c, AMX* amx, cell len = -1);
 }

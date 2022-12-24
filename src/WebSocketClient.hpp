@@ -22,7 +22,7 @@ public:
     bool disconnect();
     bool isConnected() const;
 
-    bool send(const std::string& text);
+    bool send(const std::string& text, bool isBinary);
 
     int getID() const;
     void setID(int index);
