@@ -66,7 +66,7 @@ cell AMX_NATIVE_CALL WSServerSend(AMX *amx, cell *params) {
         return (cell)(bool)WebSocketServerManager::sharedWebSocketServerManager()
                 .getServer(params[1])
                 ->getClient(params[2])
-                ->send(PAWN::CellToString(params[3], amx, params[4]));
+                ->send(PAWN::CellToString(params[3], amx, params[4]), opcode);
     } catch(...) { return 0; }
 }
 
