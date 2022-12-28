@@ -2,6 +2,7 @@
 #include "Constructor.hpp"
 #include <queue>
 #include <mutex>
+#include <functional>
 
 class SynchronizationCall {
     typedef std::function<void()> Callback;

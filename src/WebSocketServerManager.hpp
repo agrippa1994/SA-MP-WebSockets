@@ -1,6 +1,7 @@
 #pragma once
 #include "WebSocketServer.hpp"
 #include "IndexedVector.hpp"
+#include "PAWN.hpp"
 #include <string>
 #include <memory>
 
@@ -10,7 +11,7 @@ class WebSocketServerManager {
 public:
     static WebSocketServerManager& sharedWebSocketServerManager();
 
-    int create(const std::string& connectName, const std::string& disconnectName, const std::string& messageName);
+    int create(AMX *amx, const std::string& connectName, const std::string& disconnectName, const std::string& messageName);
     bool destroy(int id);
     void destroyAll();
 

@@ -6,11 +6,13 @@ WebSocketClientManager &WebSocketClientManager::sharedWebSocketClientManager() {
     return singleTon;
 }
 
-int WebSocketClientManager::create(const std::string &connectNameCallback,
+int WebSocketClientManager::create(AMX *amx,
+                                   const std::string &connectNameCallback,
                                    const std::string &failNameCallback,
                                    const std::string &disconnectNameCallabck,
                                    const std::string &messageNameCallback) {
     return m_clients += std::make_shared<WebSocketClient>(
+                amx,
                 connectNameCallback,
                 failNameCallback,
                 disconnectNameCallabck,

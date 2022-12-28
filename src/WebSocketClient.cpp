@@ -2,14 +2,14 @@
 #include "WebSocketClient.hpp"
 #include "SynchronizationCall.hpp"
 
-#include <boost/bind.hpp>
-
 WebSocketClient::WebSocketClient(
+        AMX *amx,
         const std::string& connectName,
         const std::string& failName,
         const std::string& disconnectName,
         const std::string& messageName)
-    : m_functionConnectName(connectName),
+    : m_amx(amx),
+      m_functionConnectName(connectName),
       m_functionFailName(failName),
       m_functionDisconnectName(disconnectName),
       m_functionMessageName(messageName) {
@@ -23,12 +23,13 @@ WebSocketClient::WebSocketClient(
         m_connected = true;
 
         int idx = getID();
+		AMX *amx = m_amx;
         std::string func = m_functionConnectName;
-        SynchronizationCall::sharedSynronizationCall() += [idx, func]() {
+        SynchronizationCall::sharedSynronizationCall() += [amx, idx, func]() {
             int funcIDX = 0;
-            if(!amx_FindPublic(PAWN::GetAMX(), func.c_str(), &funcIDX)) {
-                amx_Push(PAWN::GetAMX(), idx);
-                amx_Exec(PAWN::GetAMX(), NULL, funcIDX);
+            if(!amx_FindPublic(amx, func.c_str(), &funcIDX)) {
+                amx_Push(amx, idx);
+                amx_Exec(amx, NULL, funcIDX);
             }
         };
     });
@@ -37,12 +38,13 @@ WebSocketClient::WebSocketClient(
         m_connected = false;
 
         int idx = getID();
+		AMX *amx = m_amx;
         std::string func = m_functionFailName;
-        SynchronizationCall::sharedSynronizationCall() += [idx, func]() {
+        SynchronizationCall::sharedSynronizationCall() += [amx, idx, func]() {
             int funcIDX = 0;
-            if(!amx_FindPublic(PAWN::GetAMX(), func.c_str(), &funcIDX)) {
-                amx_Push(PAWN::GetAMX(), idx);
-                amx_Exec(PAWN::GetAMX(), NULL, funcIDX);
+            if(!amx_FindPublic(amx, func.c_str(), &funcIDX)) {
+                amx_Push(amx, idx);
+                amx_Exec(amx, NULL, funcIDX);
             }
         };
     });
@@ -51,12 +53,13 @@ WebSocketClient::WebSocketClient(
         m_connected = false;
 
         int idx = getID();
+		AMX *amx = m_amx;
         std::string func = m_functionDisconnectName;
-        SynchronizationCall::sharedSynronizationCall() += [idx, func]() {
+        SynchronizationCall::sharedSynronizationCall() += [amx, idx, func]() {
             int funcIDX = 0;
-            if(!amx_FindPublic(PAWN::GetAMX(), func.c_str(), &funcIDX)) {
-                amx_Push(PAWN::GetAMX(), idx);
-                amx_Exec(PAWN::GetAMX(), NULL, funcIDX);
+            if(!amx_FindPublic(amx, func.c_str(), &funcIDX)) {
+                amx_Push(amx, idx);
+                amx_Exec(amx, NULL, funcIDX);
             }
         };
     });
@@ -66,16 +69,17 @@ WebSocketClient::WebSocketClient(
             std::string data = msg->get_payload();
 
             int idx = getID();
+			AMX *amx = m_amx;
             std::string func = m_functionMessageName;
-            SynchronizationCall::sharedSynronizationCall() += [idx, func, data]() {
+            SynchronizationCall::sharedSynronizationCall() += [amx, idx, func, data]() {
                 int funcIDX = 0;
-                if(!amx_FindPublic(PAWN::GetAMX(), func.c_str(), &funcIDX)) {
+                if(!amx_FindPublic(amx, func.c_str(), &funcIDX)) {
                     cell addr = 0;
 
-                    amx_PushString(PAWN::GetAMX(), &addr, NULL, data.c_str(), NULL, NULL);
-                    amx_Push(PAWN::GetAMX(), idx);
-                    amx_Exec(PAWN::GetAMX(), NULL, funcIDX);
-                    amx_Release(PAWN::GetAMX(), addr);
+                    amx_PushString(amx, &addr, NULL, data.c_str(), NULL, NULL);
+                    amx_Push(amx, idx);
+                    amx_Exec(amx, NULL, funcIDX);
+                    amx_Release(amx, addr);
                 }
             };
         }
@@ -101,7 +105,7 @@ bool WebSocketClient::connect(const std::string &ip) {
         m_connectionPtr = ptr->get_handle();
         m_client.connect(ptr);
 
-        m_asioThread = boost::thread(boost::bind(&WebsocketClient::run, &m_client));
+        m_asioThread = std::make_unique<asio::thread>(std::bind(&WebsocketClient::run, &m_client));
         return true;
     } catch(...) { return false; }
 }
@@ -112,8 +116,7 @@ bool WebSocketClient::disconnect() {
 
     try {
         m_client.stop();
-        if(m_asioThread.joinable())
-            m_asioThread.join();
+        m_asioThread->join();
 
         m_connected = false;
         return m_client.stopped();
@@ -125,12 +128,13 @@ bool WebSocketClient::isConnected() const {
     return m_connected;
 }
 
-bool WebSocketClient::send(const std::string &text) {
+bool WebSocketClient::send(const std::string &text, bool isBinary) {
     if(!isConnected())
         return false;
 
     try {
-        if(m_client.get_con_from_hdl(m_connectionPtr)->send(text, websocketpp::frame::opcode::text))
+        auto opcode = isBinary ? websocketpp::frame::opcode::binary : websocketpp::frame::opcode::text;
+        if(m_client.get_con_from_hdl(m_connectionPtr)->send(text, opcode))
             return false;
 
         return true;

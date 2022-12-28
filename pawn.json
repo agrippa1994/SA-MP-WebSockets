@@ -1,0 +1,26 @@
+{
+	"user": "devlexanderxyz",
+	"repo": "pawn-websockets",
+	"entry": "test/test.pwn",
+	"output": "test/test.amx",
+	"dependencies": [
+		"sampctl/samp-stdlib"
+	],
+	"runtime": {
+		"plugins": [
+			"devlexanderxyz/pawn-websockets"
+		]
+	},
+    "resources": [
+        {
+            "name": "ws.so",
+            "archive": false,
+            "platform": "linux"
+        },
+        {
+            "name": "ws.dll",
+            "archive": false,
+            "platform": "windows"
+        }
+    ]
+}

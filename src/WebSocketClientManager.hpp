@@ -2,6 +2,7 @@
 #include "WebSocketClient.hpp"
 #include "IndexedVector.hpp"
 #include "Constructor.hpp"
+#include "PAWN.hpp"
 #include <memory>
 
 class WebSocketClientManager {
@@ -12,7 +13,7 @@ public:
 
     static WebSocketClientManager& sharedWebSocketClientManager();
 
-    int create(const std::string& connectNameCallback,
+    int create(AMX *amx, const std::string& connectNameCallback,
                const std::string& failNameCallback,
                const std::string& disconnectNameCallabck,
                const std::string& messageNameCallback);
